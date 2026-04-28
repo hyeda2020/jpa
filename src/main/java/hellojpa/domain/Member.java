@@ -5,7 +5,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 @Entity
 @Getter
@@ -23,6 +25,9 @@ public class Member {
     @ManyToOne
     @JoinColumn(name = "team_id") // Team 클래스의 team_id 컬럼과 조인
     private Team team;
+
+    @OneToMany(mappedBy = "member") // 연관관계 주인 설정
+    private List<Order> orders = new ArrayList<>();
 
     private String city;
 
