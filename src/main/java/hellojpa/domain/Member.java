@@ -12,7 +12,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
-public class Member {
+public class Member extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,11 +40,11 @@ public class Member {
     @Enumerated(EnumType.STRING) // enum 타입 매핑
     private RoleType roleType;
 
-    @Temporal(TemporalType.TIMESTAMP) // 날짜 타입 매핑
-    private Date createdDate;
+//    @Temporal(TemporalType.TIMESTAMP) // 날짜 타입 매핑
+//    private Date createdDate;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date lastModifiedDate;
+//    @Temporal(TemporalType.TIMESTAMP)
+//    private Date lastModifiedDate;
 
     @Lob // BLOB, CLOB 매핑
     private String description;

@@ -23,19 +23,21 @@ public class JpaMain {
         try {
 //            contextTest(em);
 
-            Movie movie = new Movie();
-            movie.setDirector("AAA");
-            movie.setActor("BBB");
-            movie.setName("바람과 함께 사라지다");
-            movie.setPrice(10000);
+//            Movie movie = new Movie();
+//            movie.setDirector("AAA");
+//            movie.setActor("BBB");
+//            movie.setName("바람과 함께 사라지다");
+//            movie.setPrice(10000);
+//
+//            em.persist(movie);
+//
+//            em.flush();
+//            em.clear();
+//
+//            Movie findMovie = em.find(Movie.class, movie.getId());
+//            System.out.println("findMovie = " + findMovie);
 
-            em.persist(movie);
 
-            em.flush();
-            em.clear();
-
-            Movie findMovie = em.find(Movie.class, movie.getId());
-            System.out.println("findMovie = " + findMovie);
 
             tx.commit();
         } catch (Exception e) {

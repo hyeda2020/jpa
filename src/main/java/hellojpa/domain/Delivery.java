@@ -10,7 +10,7 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-public class Delivery {
+public class Delivery extends BaseEntity {
 
     @Id
     @GeneratedValue
