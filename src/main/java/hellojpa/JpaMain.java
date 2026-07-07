@@ -4,6 +4,7 @@ import hellojpa.domain.Member;
 import hellojpa.domain.Team;
 import hellojpa.domain.inheritmapping.Movie;
 import jakarta.persistence.*;
+import org.hibernate.Hibernate;
 
 import java.util.List;
 
@@ -23,21 +24,43 @@ public class JpaMain {
         try {
 //            contextTest(em);
 
-//            Movie movie = new Movie();
-//            movie.setDirector("AAA");
-//            movie.setActor("BBB");
-//            movie.setName("바람과 함께 사라지다");
-//            movie.setPrice(10000);
+            Member member = new  Member();
+            member.setName("hello");
+
+            em.persist(member);
+
+            em.flush();
+            em.clear();
+
+//            Member member1 = em.find(Member.class,member.getId());
+//            System.out.println("member1 = " + member1.getClass());
+
+            /* 영속성 컨텍스트에 찾는 엔티티가 있으면 실제 엔티티 반환 */
+//            Member memberRef = em.getReference(Member.class,member1.getId());
+//            System.out.println("reference = " + memberRef.getClass());
 //
-//            em.persist(movie);
-//
-//            em.flush();
-//            em.clear();
-//
-//            Movie findMovie = em.find(Movie.class, movie.getId());
-//            System.out.println("findMovie = " + findMovie);
+//            System.out.println("member1 == reference = " + (member1 == memberRef));
 
 
+            Member memberRef = em.getReference(Member.class,member.getId()); // Proxy
+            System.out.println("memberRef = " + memberRef.getClass());
+            Hibernate.initialize(memberRef); // 프록시 강제 초기화(단, JPA 표준 기능은 아님)
+            // 프록시 인스턴스의 초기화 여부 반환
+            System.out.println("memberRef is loaded = " + emf.getPersistenceUnitUtil().isLoaded(memberRef));
+
+            Member findMember = em.find(Member.class,member.getId()); // Member
+            System.out.println("findMember = " + findMember.getClass());
+
+            // JPA는 두 객체가 동일함을 보장해야 되므로, 실제 Member를 조회해도 Proxy를 반환
+            System.out.println("memberRef == findMember : " + (memberRef == findMember));
+
+            em.clear(); // 영속성 컨텍스트 초기화
+
+            /*
+            * 더이상 영속성 컨텍스트의 도움을 받을 수 없는
+            * 준영속 상태에서는 프록시를 초기화 할 경우 예외 발생
+            * */
+            String name = memberRef.getName();
 
             tx.commit();
         } catch (Exception e) {
@@ -46,6 +69,13 @@ public class JpaMain {
             em.close();
         }
         emf.close();
+    }
+
+    private static void equalsLogic(Member member1, Member member2) {
+        /* 파라미터로 넘어오는 Member가 프록시인지 알 수 없기 때문에 instanceof 로 비교해야 됨 */
+//        System.out.println(member1.getName() == member2.getName());
+        System.out.println(member1 instanceof Member);
+        System.out.println(member2 instanceof Member);
     }
 
     /* 영속성 컨텍스트 테스트 */
