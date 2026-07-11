@@ -24,11 +24,11 @@ public class Order extends BaseEntity {
 //    private String memberId;
 
     // 아래처럼 테이블 외래키 객체를 바로 참조하는 것이 객체지향 방식
-    @ManyToOne
+    @ManyToOne(fetch =  FetchType.LAZY)
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @OneToOne
+    @OneToOne(fetch =  FetchType.LAZY)
     @JoinColumn(name = "delivery_id")
     private Delivery delivery;
 

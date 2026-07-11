@@ -23,44 +23,24 @@ public class JpaMain {
         //code
         try {
 //            contextTest(em);
+//            proxytest(emf, em);
 
-            Member member = new  Member();
-            member.setName("hello");
+            Team team = new Team();
+            team.setName("teamA");
 
-            em.persist(member);
+            Member member1 = new Member();
+            member1.setName("member1");
+            member1.setTeam(team);
+            em.persist(member1);
 
             em.flush();
             em.clear();
 
-//            Member member1 = em.find(Member.class,member.getId());
-//            System.out.println("member1 = " + member1.getClass());
+//            Member m = em.find(Member.class, member1.getId());
+//            System.out.println(m.getTeam().getName()); // 초기화
 
-            /* 영속성 컨텍스트에 찾는 엔티티가 있으면 실제 엔티티 반환 */
-//            Member memberRef = em.getReference(Member.class,member1.getId());
-//            System.out.println("reference = " + memberRef.getClass());
-//
-//            System.out.println("member1 == reference = " + (member1 == memberRef));
-
-
-            Member memberRef = em.getReference(Member.class,member.getId()); // Proxy
-            System.out.println("memberRef = " + memberRef.getClass());
-            Hibernate.initialize(memberRef); // 프록시 강제 초기화(단, JPA 표준 기능은 아님)
-            // 프록시 인스턴스의 초기화 여부 반환
-            System.out.println("memberRef is loaded = " + emf.getPersistenceUnitUtil().isLoaded(memberRef));
-
-            Member findMember = em.find(Member.class,member.getId()); // Member
-            System.out.println("findMember = " + findMember.getClass());
-
-            // JPA는 두 객체가 동일함을 보장해야 되므로, 실제 Member를 조회해도 Proxy를 반환
-            System.out.println("memberRef == findMember : " + (memberRef == findMember));
-
-            em.clear(); // 영속성 컨텍스트 초기화
-
-            /*
-            * 더이상 영속성 컨텍스트의 도움을 받을 수 없는
-            * 준영속 상태에서는 프록시를 초기화 할 경우 예외 발생
-            * */
-            String name = memberRef.getName();
+            List<Member> members = em.createQuery("select m from Member m join fetch m.team",  Member.class)
+                    .getResultList();
 
             tx.commit();
         } catch (Exception e) {
@@ -69,6 +49,46 @@ public class JpaMain {
             em.close();
         }
         emf.close();
+    }
+
+    private static void proxytest(EntityManagerFactory emf, EntityManager em) {
+        Member member = new  Member();
+        member.setName("hello");
+
+        em.persist(member);
+
+        em.flush();
+        em.clear();
+
+//            Member member1 = em.find(Member.class,member.getId());
+//            System.out.println("member1 = " + member1.getClass());
+
+        /* 영속성 컨텍스트에 찾는 엔티티가 있으면 실제 엔티티 반환 */
+//            Member memberRef = em.getReference(Member.class,member1.getId());
+//            System.out.println("reference = " + memberRef.getClass());
+//
+//            System.out.println("member1 == reference = " + (member1 == memberRef));
+
+
+        Member memberRef = em.getReference(Member.class,member.getId()); // Proxy
+        System.out.println("memberRef = " + memberRef.getClass());
+        Hibernate.initialize(memberRef); // 프록시 강제 초기화(단, JPA 표준 기능은 아님)
+        // 프록시 인스턴스의 초기화 여부 반환
+        System.out.println("memberRef is loaded = " + emf.getPersistenceUnitUtil().isLoaded(memberRef));
+
+        Member findMember = em.find(Member.class,member.getId()); // Member
+        System.out.println("findMember = " + findMember.getClass());
+
+        // JPA는 두 객체가 동일함을 보장해야 되므로, 실제 Member를 조회해도 Proxy를 반환
+        System.out.println("memberRef == findMember : " + (memberRef == findMember));
+
+        em.clear(); // 영속성 컨텍스트 초기화
+
+        /*
+         * 더이상 영속성 컨텍스트의 도움을 받을 수 없는
+         * 준영속 상태에서는 프록시를 초기화 할 경우 예외 발생
+         * */
+        String name = memberRef.getName();
     }
 
     private static void equalsLogic(Member member1, Member member2) {

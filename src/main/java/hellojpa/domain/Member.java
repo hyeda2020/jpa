@@ -22,7 +22,8 @@ public class Member extends BaseEntity {
     @Column(name = "name") // 컬럼 매핑
     private String name;
 
-    @ManyToOne
+    @ManyToOne(fetch =  FetchType.LAZY) // 지연로딩 LAZY 를 사용해서 프록시 조회
+//    @ManyToOne(fetch =  FetchType.EAGER) // 즉시로딩 사용(Member 조회 시 항상 Team도 조회하는 경우)
     @JoinColumn(name = "team_id") // Team 클래스의 team_id 컬럼과 조인
     private Team team;
 
