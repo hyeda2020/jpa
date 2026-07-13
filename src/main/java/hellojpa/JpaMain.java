@@ -1,6 +1,8 @@
 package hellojpa;
 
+import hellojpa.domain.Child;
 import hellojpa.domain.Member;
+import hellojpa.domain.Parent;
 import hellojpa.domain.Team;
 import hellojpa.domain.inheritmapping.Movie;
 import jakarta.persistence.*;
@@ -23,24 +25,27 @@ public class JpaMain {
         //code
         try {
 //            contextTest(em);
-//            proxytest(emf, em);
+//            proxyTest(emf, em);
+//            loadingTest(em);
 
-            Team team = new Team();
-            team.setName("teamA");
+            Child child1 = new Child();
+            Child child2 = new Child();
 
-            Member member1 = new Member();
-            member1.setName("member1");
-            member1.setTeam(team);
-            em.persist(member1);
+            Parent parent = new Parent();
+            parent.addChild(child1);
+            parent.addChild(child2);
+
+            em.persist(parent);
+//            em.persist(child1);
+//            em.persist(child2);
 
             em.flush();
             em.clear();
 
-//            Member m = em.find(Member.class, member1.getId());
-//            System.out.println(m.getTeam().getName()); // 초기화
+            Parent findParent = em.find(Parent.class, parent.getId());
+            findParent.getChildList().remove(0);
 
-            List<Member> members = em.createQuery("select m from Member m join fetch m.team",  Member.class)
-                    .getResultList();
+            em.remove(findParent); // 고아 객체 만들기(부모 삭제)
 
             tx.commit();
         } catch (Exception e) {
@@ -51,7 +56,26 @@ public class JpaMain {
         emf.close();
     }
 
-    private static void proxytest(EntityManagerFactory emf, EntityManager em) {
+    private static void loadingTest(EntityManager em) {
+        Team team = new Team();
+        team.setName("teamA");
+
+        Member member1 = new Member();
+        member1.setName("member1");
+        member1.setTeam(team);
+        em.persist(member1);
+
+        em.flush();
+        em.clear();
+
+//            Member m = em.find(Member.class, member1.getId());
+//            System.out.println(m.getTeam().getName()); // 초기화
+
+        List<Member> members = em.createQuery("select m from Member m join fetch m.team",  Member.class)
+                .getResultList();
+    }
+
+    private static void proxyTest(EntityManagerFactory emf, EntityManager em) {
         Member member = new  Member();
         member.setName("hello");
 
