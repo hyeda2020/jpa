@@ -1,6 +1,8 @@
 package hellojpa.domain;
 
 import hellojpa.RoleType;
+import hellojpa.domain.embedded.Address;
+import hellojpa.domain.embedded.Period;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,11 +32,24 @@ public class Member extends BaseEntity {
     @OneToMany(mappedBy = "member") // 연관관계 주인 설정
     private List<Order> orders = new ArrayList<>();
 
-    private String city;
+    // 임베디드 타입 적용
+    @Embedded
+    private Address homeAddress;
 
-    private String street;
+    // 동일 타입 임베디드 타입 추가 적용 예시
+    @Embedded
+    @AttributeOverrides({
+            @AttributeOverride(name = "city",
+                column=@Column(name = "WORK_CITY")),
+            @AttributeOverride(name = "street",
+                column=@Column(name = "WORK_STREET")),
+            @AttributeOverride(name = "zipcode",
+                column=@Column(name = "WORK_ZIPCODE"))
+    })
+    private Address workAddress;
 
-    private String zipcode;
+    @Embedded
+    private Period workPeriod;
 
     private Integer age;
 
