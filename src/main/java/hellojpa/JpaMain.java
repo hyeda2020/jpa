@@ -4,6 +4,7 @@ import hellojpa.domain.Child;
 import hellojpa.domain.Member;
 import hellojpa.domain.Parent;
 import hellojpa.domain.Team;
+import hellojpa.domain.embedded.Address;
 import hellojpa.domain.inheritmapping.Movie;
 import jakarta.persistence.*;
 import org.hibernate.Hibernate;
