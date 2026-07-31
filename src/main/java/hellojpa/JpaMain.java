@@ -1,9 +1,6 @@
 package hellojpa;
 
-import hellojpa.domain.Child;
-import hellojpa.domain.Member;
-import hellojpa.domain.Parent;
-import hellojpa.domain.Team;
+import hellojpa.domain.*;
 import hellojpa.domain.embedded.Address;
 import hellojpa.domain.inheritmapping.Movie;
 import jakarta.persistence.*;
@@ -25,28 +22,39 @@ public class JpaMain {
 
         //code
         try {
-//            contextTest(em);
-//            proxyTest(emf, em);
-//            loadingTest(em);
+            Member member = new Member();
+            member.setName("member1");
+            member.setHomeAddress(new Address("homeCity", "street", "zipcode"));
 
-            Child child1 = new Child();
-            Child child2 = new Child();
+            member.getFavoriteFoods().add("치킨");
+            member.getFavoriteFoods().add("족발");
+            member.getFavoriteFoods().add("피자");
 
-            Parent parent = new Parent();
-            parent.addChild(child1);
-            parent.addChild(child2);
+//            member.getAddressHistory().add(new Address("oldCity1", "street", "10000"));
+//            member.getAddressHistory().add(new Address("oldCity2", "street", "10000"));
+            member.getAddressHistory().add(new AddressEntity("oldCity1", "street", "10000"));
+            member.getAddressHistory().add(new AddressEntity("oldCity2", "street", "10000"));
 
-            em.persist(parent);
-//            em.persist(child1);
-//            em.persist(child2);
+            em.persist(member);
 
             em.flush();
             em.clear();
 
-            Parent findParent = em.find(Parent.class, parent.getId());
-            findParent.getChildList().remove(0);
+            Member findMember = em.find(Member.class, member.getId());
 
-            em.remove(findParent); // 고아 객체 만들기(부모 삭제)
+            // homeCity -> newCity 교체시 아예 값타입 객체를 갈아끼워야 함
+            findMember.setHomeAddress(new Address("newCity", "street", "10000"));
+
+            // 값 타입 내에서 치킨 -> 한식 변경
+            findMember.getFavoriteFoods().remove("치킨");
+            findMember.getFavoriteFoods().add("한식");
+
+            /** 값 타입 내에서 oldCity1 -> newCity
+            * 단, 이럴 경우 업데이트가 아닌, 테이블 전체를 지우고 처음부터 다시 삽입
+            * 따라서 실무에서는 업데이트가 발생하지 않는 경우엔 값타입 컬렉션을,
+            * 업데이트가 발생하는 경우에는 값타입 컬렉션 보다는 엔티티를 활용하는 것을 권장 */
+//            findMember.getAddressHistory().remove(new Address("oldCity1", "street", "10000"));
+//            findMember.getAddressHistory().add(new Address("newCity", "street", "10000"));
 
             tx.commit();
         } catch (Exception e) {
@@ -55,6 +63,27 @@ public class JpaMain {
             em.close();
         }
         emf.close();
+    }
+
+    private static void opphanTest(EntityManager em) {
+        Child child1 = new Child();
+        Child child2 = new Child();
+
+        Parent parent = new Parent();
+        parent.addChild(child1);
+        parent.addChild(child2);
+
+        em.persist(parent);
+//            em.persist(child1);
+//            em.persist(child2);
+
+        em.flush();
+        em.clear();
+
+        Parent findParent = em.find(Parent.class, parent.getId());
+        findParent.getChildList().remove(0);
+
+        em.remove(findParent); // 고아 객체 만들기(부모 삭제)
     }
 
     private static void loadingTest(EntityManager em) {

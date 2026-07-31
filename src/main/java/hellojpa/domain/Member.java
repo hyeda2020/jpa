@@ -7,9 +7,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Entity
 @Getter
@@ -35,6 +33,26 @@ public class Member extends BaseEntity {
     // 임베디드 타입 적용
     @Embedded
     private Address homeAddress;
+
+    /* 값 타입 컬렉션 */
+    /**
+     * DB는 값 타입 컬렉션을 같은 테이블에 저장 불가능
+     * 따라서 컬렉션을 저장하기 위한 별도 테이블 필요
+     * 참고로, 값 타입 컬렉션도 지연로딩 전략 + 영속성전이 및 고아객체 제거 사용
+     * (사실상 라이프사이클을 Member에서 관리)
+     */
+    @ElementCollection
+    @CollectionTable(name = "favorite_foods", joinColumns = @JoinColumn(name = "member_id"))
+    private Set<String> favoriteFoods = new HashSet<>();
+
+//    @ElementCollection
+//    @CollectionTable(name = "address", joinColumns = @JoinColumn(name = "member_id"))
+//    private List<Address> addressHistory = new ArrayList<>();
+
+    // 값 타입 컬렉션을 엔티티 리스트로 변환
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private List<AddressEntity>  addressHistory = new ArrayList<>();
 
     // 동일 타입 임베디드 타입 추가 적용 예시
     @Embedded
