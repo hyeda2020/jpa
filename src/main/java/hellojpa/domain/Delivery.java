@@ -1,9 +1,7 @@
 package hellojpa.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import hellojpa.domain.embedded.Address;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,9 +14,10 @@ public class Delivery extends BaseEntity {
     @GeneratedValue
     private Long id;
 
-    private String city;
-    private String street;
-    private String zipcode;
+    // 값 타입 적용
+    @Embedded
+    private Address address;
+
     private DeliveryStatus status;
 
     @OneToOne(mappedBy = "delivery")
