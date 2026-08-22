@@ -20,15 +20,27 @@ public class JpqlMain {
         tx.begin();
 
         try {
-//            Member member = new Member();
-//            member.setName("member1");
-//            member.setAge(30);
-//            em.persist(member);
+
+            Team team = new Team();
+            team.setName("TeamA");
+            em.persist(team);
+
+            Member member = new Member();
+            member.setName("member1");
+            member.setAge(30);
+            member.setTeam(team);
+
+            em.persist(member);
 
             em.flush();
             em.clear();
 
+            String innerJoinQuery = "select m from Member m inner join m.team t"; // 내부 조인
+            String leftJoinQuery = "select m from Member m left join m.team t on t.name = 'teamA'"; // (left)아우터 조인 + 조인 대상 필터링
+            String thetaJoinQuery = "select m from Member m, Team t where m.username = t.name"; // 세타 조인
 
+            List<Member> resultList = em.createQuery(leftJoinQuery, Member.class)
+                    .getResultList();
 
             tx.commit();
         } catch (Exception e) {
