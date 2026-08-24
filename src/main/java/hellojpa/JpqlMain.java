@@ -21,25 +21,14 @@ public class JpqlMain {
 
         try {
 
-            Team team = new Team();
-            team.setName("TeamA");
-            em.persist(team);
-
             Member member = new Member();
             member.setName("member1");
             member.setAge(30);
-            member.setTeam(team);
 
-            em.persist(member);
+            // 나이가 평균보다 많은 회원 조건 서브쿼리 예시
+            String subQuery = "select m from Member m where m.age > (select avg(m2.age) from Member m2)";
 
-            em.flush();
-            em.clear();
-
-            String innerJoinQuery = "select m from Member m inner join m.team t"; // 내부 조인
-            String leftJoinQuery = "select m from Member m left join m.team t on t.name = 'teamA'"; // (left)아우터 조인 + 조인 대상 필터링
-            String thetaJoinQuery = "select m from Member m, Team t where m.username = t.name"; // 세타 조인
-
-            List<Member> resultList = em.createQuery(leftJoinQuery, Member.class)
+            List<Member> resultList = em.createQuery(subQuery, Member.class)
                     .getResultList();
 
             tx.commit();
@@ -51,6 +40,29 @@ public class JpqlMain {
         }
 
         emf.close();
+    }
+
+    private static void joinQuery(EntityManager em) {
+        Team team = new Team();
+        team.setName("TeamA");
+        em.persist(team);
+
+        Member member = new Member();
+        member.setName("member1");
+        member.setAge(30);
+        member.setTeam(team);
+
+        em.persist(member);
+
+        em.flush();
+        em.clear();
+
+        String innerJoinQuery = "select m from Member m inner join m.team t"; // 내부 조인
+        String leftJoinQuery = "select m from Member m left join m.team t on t.name = 'teamA'"; // (left)아우터 조인 + 조인 대상 필터링
+        String thetaJoinQuery = "select m from Member m, Team t where m.username = t.name"; // 세타 조인
+
+        List<Member> resultList = em.createQuery(leftJoinQuery, Member.class)
+                .getResultList();
     }
 
     private static void pagingQuery(EntityManager em) {
