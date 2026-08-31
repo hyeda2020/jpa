@@ -27,6 +27,9 @@ public class Member extends BaseEntity {
     @JoinColumn(name = "team_id") // Team 클래스의 team_id 컬럼과 조인
     private Team team;
 
+    @Enumerated(EnumType.STRING)
+    private MemberType type;
+
     @OneToMany(mappedBy = "member") // 연관관계 주인 설정
     private List<Order> orders = new ArrayList<>();
 

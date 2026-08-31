@@ -1,6 +1,7 @@
 package hellojpa;
 
 import hellojpa.domain.Member;
+import hellojpa.domain.MemberType;
 import hellojpa.domain.Team;
 import hellojpa.domain.embedded.Address;
 import jakarta.persistence.*;
@@ -25,11 +26,14 @@ public class JpqlMain {
             member.setName("member1");
             member.setAge(30);
 
-            // 나이가 평균보다 많은 회원 조건 서브쿼리 예시
-            String subQuery = "select m from Member m where m.age > (select avg(m2.age) from Member m2)";
-
-            List<Member> resultList = em.createQuery(subQuery, Member.class)
-                    .getResultList();
+            String query =
+                    "select " +
+                        "case when m.age <= 10 then '학생요금' " +
+                        "     when m.age >= 60 then '경로요금' " +
+                        "     else '일반요금' " +
+                        "end" +
+                    "from Member m";
+            List<String> resultList = em.createQuery(query, String.class).getResultList();
 
             tx.commit();
         } catch (Exception e) {
@@ -40,6 +44,39 @@ public class JpqlMain {
         }
 
         emf.close();
+    }
+
+    private static void typeQuery(EntityManager em) {
+        Member member = new Member();
+        member.setName("member1");
+        member.setAge(30);
+        member.setType(MemberType.ADMIN);
+
+        em.persist(member);
+
+        em.flush();
+        em.clear();
+
+        String query = "select m.username, 'HELLO', true from Member m where m.type = hellojpa.domain.MemberType.ADMIN";
+        List<Member> resultList = em.createQuery(query, Member.class)
+                .getResultList();
+    }
+
+    private static void subQuery(EntityManager em) {
+        Member member = new Member();
+        member.setName("member1");
+        member.setAge(30);
+
+        em.persist(member);
+
+        em.flush();
+        em.clear();
+
+        // 나이가 평균보다 많은 회원 조건 서브쿼리 예시
+        String subQuery = "select m from Member m where m.age > (select avg(m2.age) from Member m2)";
+
+        List<Member> resultList = em.createQuery(subQuery, Member.class)
+                .getResultList();
     }
 
     private static void joinQuery(EntityManager em) {
