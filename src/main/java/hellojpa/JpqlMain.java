@@ -9,6 +9,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 
+import java.util.Collection;
 import java.util.List;
 
 public class JpqlMain {
@@ -22,18 +23,26 @@ public class JpqlMain {
 
         try {
 
+            Team team = new Team();
+            em.persist(team);
+
             Member member = new Member();
             member.setName("member1");
+            member.setTeam(team);
             member.setAge(30);
+            em.persist(member);
 
-            String query =
-                    "select " +
-                        "case when m.age <= 10 then '학생요금' " +
-                        "     when m.age >= 60 then '경로요금' " +
-                        "     else '일반요금' " +
-                        "end" +
-                    "from Member m";
-            List<String> resultList = em.createQuery(query, String.class).getResultList();
+            em.flush();
+            em.clear();
+
+            /* 단일 값 연관 경로로, 묵시적 내부 조인(Member와 Team의 inner join) 발생(실무에서는 사용 자제) */
+            String query1 = "select m.team from Member m";
+            List<Team> resultTeamList = em.createQuery(query1, Team.class).getResultList();
+
+            /* 컬렉션 값 연관 경로로, 묵시적 내부 조인 발생 X */
+//            String query2 = "select t.members from Team t";
+            String query3 = "select m.username from Team t join t.members m"; // From절에서 명시적 조인을 통해 별칭을 얻으면 별칭으로 탐색 가능
+            List<Collection> resultCollectionList = em.createQuery(query3, Collection.class).getResultList();
 
             tx.commit();
         } catch (Exception e) {
@@ -44,6 +53,21 @@ public class JpqlMain {
         }
 
         emf.close();
+    }
+
+    private static void caseQuery(EntityManager em) {
+        Member member = new Member();
+        member.setName("member1");
+        member.setAge(30);
+
+        String query =
+                "select " +
+                        "case when m.age <= 10 then '학생요금' " +
+                        "     when m.age >= 60 then '경로요금' " +
+                        "     else '일반요금' " +
+                        "end" +
+                        "from Member m";
+        List<String> resultList = em.createQuery(query, String.class).getResultList();
     }
 
     private static void typeQuery(EntityManager em) {
