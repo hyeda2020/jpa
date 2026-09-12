@@ -22,27 +22,61 @@ public class JpqlMain {
         tx.begin();
 
         try {
+            Team teamA = new  Team();
+            teamA.setName("Team A");
+            em.persist(teamA);
 
-            Team team = new Team();
-            em.persist(team);
+            Team teamB = new  Team();
+            teamB.setName("Team B");
+            em.persist(teamB);
 
-            Member member = new Member();
-            member.setName("member1");
-            member.setTeam(team);
-            member.setAge(30);
-            em.persist(member);
+            Member memberA = new  Member();
+            memberA.setName("Member A");
+            memberA.setTeam(teamA);
+            em.persist(memberA);
+
+            Member memberB = new  Member();
+            memberB.setName("Member B");
+            memberB.setTeam(teamA);
+            em.persist(memberB);
+
+            Member  memberC = new  Member();
+            memberC.setName("Member C");
+            memberC.setTeam(teamB);
+            em.persist(memberC);
 
             em.flush();
             em.clear();
 
-            /* 단일 값 연관 경로로, 묵시적 내부 조인(Member와 Team의 inner join) 발생(실무에서는 사용 자제) */
-            String query1 = "select m.team from Member m";
-            List<Team> resultTeamList = em.createQuery(query1, Team.class).getResultList();
+            // 일반 쿼리
+            String query = "select m from Member m";
+            List<Member> resultList = em.createQuery(query, Member.class).getResultList();
+            for (Member member : resultList) {
+                System.out.println(member.getName() + ", "+ member.getTeam().getName());
+                // 회원A : 팀A(SQL)
+                // 회원B : 팀A(1차 캐시)
+                // 회원C : 팀B(SQL)
 
-            /* 컬렉션 값 연관 경로로, 묵시적 내부 조인 발생 X */
-//            String query2 = "select t.members from Team t";
-            String query3 = "select m.username from Team t join t.members m"; // From절에서 명시적 조인을 통해 별칭을 얻으면 별칭으로 탐색 가능
-            List<Collection> resultCollectionList = em.createQuery(query3, Collection.class).getResultList();
+                // 회원 100명이 각가 다른 팀 소속일 경우 -> N + 1 문제 발생
+            }
+
+            // 페치 조인
+            String fetchJoinQuery = "select m from Member m join fetch m.team";
+            List<Member> fetchJoinResultList = em.createQuery(fetchJoinQuery, Member.class).getResultList();
+            for (Member member : fetchJoinResultList) {
+                // fetch 조인으로 회원과 팀을 함께 조회해서 지연 로딩X
+                System.out.println(member.getName() + ", "+ member.getTeam().getName());
+            }
+
+            // 일대다 관계, 컬렉션 페치 조인
+            String fetchJoinQuery2 = "select t from Team t join fetch t.members";
+            List<Team> collectionFetchJoinResultList = em.createQuery(fetchJoinQuery2, Team.class).getResultList();
+            for (Team team : collectionFetchJoinResultList) {
+                System.out.println(team.getName() + ", " + team.getMembers().size());
+                for (Member member : team.getMembers()) {
+                    System.out.println(member.getName() + ", " + member.getTeam().getName());
+                }
+            }
 
             tx.commit();
         } catch (Exception e) {
@@ -55,10 +89,38 @@ public class JpqlMain {
         emf.close();
     }
 
+    private static void pathExpressionQuery(EntityManager em) {
+        Team team = new Team();
+        em.persist(team);
+
+        Member member = new Member();
+        member.setName("member1");
+        member.setTeam(team);
+        member.setAge(30);
+        em.persist(member);
+
+        em.flush();
+        em.clear();
+
+        /* 단일 값 연관 경로로, 묵시적 내부 조인(Member와 Team의 inner join) 발생(실무에서는 사용 자제) */
+        String query1 = "select m.team from Member m";
+        List<Team> resultTeamList = em.createQuery(query1, Team.class).getResultList();
+
+        /* 컬렉션 값 연관 경로로, 묵시적 내부 조인 발생 X */
+//            String query2 = "select t.members from Team t";
+        String query3 = "select m.username from Team t join t.members m"; // From절에서 명시적 조인을 통해 별칭을 얻으면 별칭으로 탐색 가능
+        List<Collection> resultCollectionList = em.createQuery(query3, Collection.class).getResultList();
+    }
+
     private static void caseQuery(EntityManager em) {
         Member member = new Member();
         member.setName("member1");
         member.setAge(30);
+
+        em.persist(member);
+
+        em.flush();
+        em.clear();
 
         String query =
                 "select " +
