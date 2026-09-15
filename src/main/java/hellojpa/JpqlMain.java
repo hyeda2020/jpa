@@ -48,33 +48,18 @@ public class JpqlMain {
             em.flush();
             em.clear();
 
-            // 일반 쿼리
-            String query = "select m from Member m";
-            List<Member> resultList = em.createQuery(query, Member.class).getResultList();
-            for (Member member : resultList) {
-                System.out.println(member.getName() + ", "+ member.getTeam().getName());
-                // 회원A : 팀A(SQL)
-                // 회원B : 팀A(1차 캐시)
-                // 회원C : 팀B(SQL)
+            String query = "select t From Team t";
+            List<Team> resultList = em.createQuery(query, Team.class)
+                            .setFirstResult(0)
+                            .setMaxResults(2)
+                            .getResultList();
 
-                // 회원 100명이 각가 다른 팀 소속일 경우 -> N + 1 문제 발생
-            }
+            System.out.println(resultList.size());
 
-            // 페치 조인
-            String fetchJoinQuery = "select m from Member m join fetch m.team";
-            List<Member> fetchJoinResultList = em.createQuery(fetchJoinQuery, Member.class).getResultList();
-            for (Member member : fetchJoinResultList) {
-                // fetch 조인으로 회원과 팀을 함께 조회해서 지연 로딩X
-                System.out.println(member.getName() + ", "+ member.getTeam().getName());
-            }
-
-            // 일대다 관계, 컬렉션 페치 조인
-            String fetchJoinQuery2 = "select t from Team t join fetch t.members";
-            List<Team> collectionFetchJoinResultList = em.createQuery(fetchJoinQuery2, Team.class).getResultList();
-            for (Team team : collectionFetchJoinResultList) {
-                System.out.println(team.getName() + ", " + team.getMembers().size());
+            for (Team team : resultList) {
+                System.out.println("team = " + team.getName() + "|members = " + team.getMembers());
                 for (Member member : team.getMembers()) {
-                    System.out.println(member.getName() + ", " + member.getTeam().getName());
+                    System.out.println("-> member = " + member);
                 }
             }
 
@@ -87,6 +72,64 @@ public class JpqlMain {
         }
 
         emf.close();
+    }
+
+    private static void fetchJoinBasic(EntityManager em) {
+        Team teamA = new  Team();
+        teamA.setName("Team A");
+        em.persist(teamA);
+
+        Team teamB = new  Team();
+        teamB.setName("Team B");
+        em.persist(teamB);
+
+        Member memberA = new  Member();
+        memberA.setName("Member A");
+        memberA.setTeam(teamA);
+        em.persist(memberA);
+
+        Member memberB = new  Member();
+        memberB.setName("Member B");
+        memberB.setTeam(teamA);
+        em.persist(memberB);
+
+        Member  memberC = new  Member();
+        memberC.setName("Member C");
+        memberC.setTeam(teamB);
+        em.persist(memberC);
+
+        em.flush();
+        em.clear();
+
+        // 일반 쿼리
+        String query = "select m from Member m";
+        List<Member> resultList = em.createQuery(query, Member.class).getResultList();
+        for (Member member : resultList) {
+            System.out.println(member.getName() + ", "+ member.getTeam().getName());
+            // 회원A : 팀A(SQL)
+            // 회원B : 팀A(1차 캐시)
+            // 회원C : 팀B(SQL)
+
+            // 회원 100명이 각가 다른 팀 소속일 경우 -> N + 1 문제 발생
+        }
+
+        // 페치 조인
+        String fetchJoinQuery = "select m from Member m join fetch m.team";
+        List<Member> fetchJoinResultList = em.createQuery(fetchJoinQuery, Member.class).getResultList();
+        for (Member member : fetchJoinResultList) {
+            // fetch 조인으로 회원과 팀을 함께 조회해서 지연 로딩X
+            System.out.println(member.getName() + ", "+ member.getTeam().getName());
+        }
+
+        // 일대다 관계, 컬렉션 페치 조인
+        String fetchJoinQuery2 = "select t from Team t join fetch t.members";
+        List<Team> collectionFetchJoinResultList = em.createQuery(fetchJoinQuery2, Team.class).getResultList();
+        for (Team team : collectionFetchJoinResultList) {
+            System.out.println(team.getName() + ", " + team.getMembers().size());
+            for (Member member : team.getMembers()) {
+                System.out.println(member.getName() + ", " + member.getTeam().getName());
+            }
+        }
     }
 
     private static void pathExpressionQuery(EntityManager em) {

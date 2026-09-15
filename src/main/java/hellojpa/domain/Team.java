@@ -3,6 +3,7 @@ package hellojpa.domain;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,5 +26,6 @@ public class Team extends BaseEntity {
      * 이를 통해 Member 클래스의 team 을 바꾸면 Member 테이블의 값이 바뀐다고 바로 쉽게 이해할 수 있음
      *  */
     @OneToMany(mappedBy = "team")
+    @BatchSize(size = 100)
     private List<Member> members = new ArrayList<>();
 }
