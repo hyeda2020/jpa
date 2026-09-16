@@ -22,46 +22,29 @@ public class JpqlMain {
         tx.begin();
 
         try {
-            Team teamA = new  Team();
-            teamA.setName("Team A");
-            em.persist(teamA);
 
-            Team teamB = new  Team();
-            teamB.setName("Team B");
-            em.persist(teamB);
+            Team team = new Team();
+            team.setName("team A");
 
-            Member memberA = new  Member();
-            memberA.setName("Member A");
-            memberA.setTeam(teamA);
-            em.persist(memberA);
+            Member member = new  Member();
+            member.setName("Member A");
+            member.setTeam(team);
+            em.persist(member);
 
-            Member memberB = new  Member();
-            memberB.setName("Member B");
-            memberB.setTeam(teamA);
-            em.persist(memberB);
+//            String query = "select m from Member m where m = :member";
+//            List<Member> resultList = em.createQuery(query, Member.class)
+//                    .setParameter("member", member) // 엔티티를 파라미터로 전달
+//                    .getResultList();
 
-            Member  memberC = new  Member();
-            memberC.setName("Member C");
-            memberC.setTeam(teamB);
-            em.persist(memberC);
+//            String query = "select m from Member m where m.id = :memberId";
+//            List<Member> resultList = em.createQuery(query, Member.class)
+//                    .setParameter("memberId", member.getId()) // 식별자를 파라미터로 전달
+//                    .getResultList();
 
-            em.flush();
-            em.clear();
-
-            String query = "select t From Team t";
-            List<Team> resultList = em.createQuery(query, Team.class)
-                            .setFirstResult(0)
-                            .setMaxResults(2)
-                            .getResultList();
-
-            System.out.println(resultList.size());
-
-            for (Team team : resultList) {
-                System.out.println("team = " + team.getName() + "|members = " + team.getMembers());
-                for (Member member : team.getMembers()) {
-                    System.out.println("-> member = " + member);
-                }
-            }
+            String query = "select m from Member m where m.team = :team";
+            List<Member> resultList = em.createQuery(query, Member.class)
+                    .setParameter("team", team) // 외래키 값을 파라미터로 전달
+                    .getResultList();
 
             tx.commit();
         } catch (Exception e) {
@@ -72,6 +55,50 @@ public class JpqlMain {
         }
 
         emf.close();
+    }
+
+    private static void fetchJoinExample(EntityManager em {
+        Team teamA = new  Team();
+        teamA.setName("Team A");
+        em.persist(teamA);
+
+        Team teamB = new  Team();
+        teamB.setName("Team B");
+        em.persist(teamB);
+
+        Member memberA = new  Member();
+        memberA.setName("Member A");
+        memberA.setTeam(teamA);
+        em.persist(memberA);
+
+        Member memberB = new  Member();
+        memberB.setName("Member B");
+        memberB.setTeam(teamA);
+        em.persist(memberB);
+
+        Member  memberC = new  Member();
+        memberC.setName("Member C");
+        memberC.setTeam(teamB);
+        em.persist(memberC);
+
+        em.flush();
+        em.clear();
+
+        String query = "select t From Team t";
+        List<Team> resultList = em.createQuery(query, Team.class)
+                .setFirstResult(0)
+                .setMaxResults(2)
+                .getResultList();
+
+        System.out.println(resultList.size());
+
+        for (Team team : resultList) {
+            System.out.println("team = " + team.getName() + "|members = " + team.getMembers());
+            for (Member member : team.getMembers()) {
+                System.out.println("-> member = " + member);
+            }
+        }
+
     }
 
     private static void fetchJoinBasic(EntityManager em) {
