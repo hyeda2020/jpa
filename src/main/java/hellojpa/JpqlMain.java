@@ -23,28 +23,35 @@ public class JpqlMain {
 
         try {
 
-            Team team = new Team();
-            team.setName("team A");
+            Member memberA = new  Member();
+            memberA.setName("MemberA");
+            memberA.setAge(25);
+            em.persist(memberA);
 
-            Member member = new  Member();
-            member.setName("Member A");
-            member.setTeam(team);
-            em.persist(member);
+            Member memberB = new  Member();
+            memberB.setName("MemberB");
+            memberB.setAge(30);
+            em.persist(memberB);
 
-//            String query = "select m from Member m where m = :member";
-//            List<Member> resultList = em.createQuery(query, Member.class)
-//                    .setParameter("member", member) // 엔티티를 파라미터로 전달
-//                    .getResultList();
+            Member memberC = new  Member();
+            memberC.setName("MemberC");
+            memberC.setAge(50);
+            em.persist(memberC);
 
-//            String query = "select m from Member m where m.id = :memberId";
-//            List<Member> resultList = em.createQuery(query, Member.class)
-//                    .setParameter("memberId", member.getId()) // 식별자를 파라미터로 전달
-//                    .getResultList();
+            // 벌크 연산 예제
+            // flush 자동 호출(DB에만 적용)
+            int resultCount = em.createQuery("update Member m set m.age = 20")
+                    .executeUpdate();
 
-            String query = "select m from Member m where m.team = :team";
-            List<Member> resultList = em.createQuery(query, Member.class)
-                    .setParameter("team", team) // 외래키 값을 파라미터로 전달
-                    .getResultList();
+            System.out.println("MemberA Age = " + memberA.getAge());
+            System.out.println("MemberB Age = " + memberB.getAge());
+            System.out.println("MemberC Age = " + memberC.getAge());
+
+            em.clear(); // 영속성 컨텍스트 초기화하여 적용
+
+            System.out.println("MemberA Age = " + memberA.getAge());
+            System.out.println("MemberB Age = " + memberB.getAge());
+            System.out.println("MemberC Age = " + memberC.getAge());
 
             tx.commit();
         } catch (Exception e) {
@@ -57,7 +64,49 @@ public class JpqlMain {
         emf.close();
     }
 
-    private static void fetchJoinExample(EntityManager em {
+    private static void namedQuery(EntityManager em) {
+        Member member = new  Member();
+        member.setName("MemberA");
+        em.persist(member);
+
+        em.flush();
+        em.clear();
+
+        // 네임드쿼리 사용 예제
+        List<Member> resultList = em.createNamedQuery("Member.findByUsername", Member.class)
+                .setParameter("username", "MemberA")
+                .getResultList();
+    }
+
+    private static void entityQuery(EntityManager em) {
+        Team team = new Team();
+        team.setName("team A");
+
+        Member member = new  Member();
+        member.setName("Member A");
+        member.setTeam(team);
+        em.persist(member);
+
+        em.flush();
+        em.clear();
+
+//            String query = "select m from Member m where m = :member";
+//            List<Member> resultList = em.createQuery(query, Member.class)
+//                    .setParameter("member", member) // 엔티티를 파라미터로 전달
+//                    .getResultList();
+
+//            String query = "select m from Member m where m.id = :memberId";
+//            List<Member> resultList = em.createQuery(query, Member.class)
+//                    .setParameter("memberId", member.getId()) // 식별자를 파라미터로 전달
+//                    .getResultList();
+
+        String query = "select m from Member m where m.team = :team";
+        List<Member> resultList = em.createQuery(query, Member.class)
+                .setParameter("team", team) // 외래키 값을 파라미터로 전달
+                .getResultList();
+    }
+
+    private static void fetchJoinExample(EntityManager em) {
         Team teamA = new  Team();
         teamA.setName("Team A");
         em.persist(teamA);
